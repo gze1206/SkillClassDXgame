@@ -102,6 +102,7 @@ void GameManager::Update()
 				print("보스 체력 : %d\n", mBossPtr->GetInfo()->NowHP);
 				if (mBossPtr->GetInfo()->NowHP <= 0)
 				{
+					clip->Stop();
 					mBossPtr->~Monster();
 					GameOver();
 				}
