@@ -5,6 +5,7 @@
 #include "Item.h"
 #include "Monster.h"
 #include "Bullet.h"
+#include "EnemyBullet.h"
 #include "ResourceManager.h"
 
 class Player;
@@ -18,6 +19,7 @@ struct CharacterInfo
 	float Speed;
 	int MaxHP, NowHP;
 	int DMG;
+	int ShootInterval;
 };
 
 enum Rotate
@@ -42,7 +44,10 @@ public:
 	void Render();
 	void Destroy();
 	void GameOver();
-	bool IsTriggerOn(const RECT& a, const RECT& b);
+	void TaskUpdate(TaskList* list);
+	void TaskRender(TaskList* list);
+	void TaskDelete(TaskList* list);
+	void CheckStage();
 	static int print(_In_z_ _Printf_format_string_ char const* const _Format, ...)
 	{
 #if DEBUG
@@ -64,6 +69,8 @@ public:
 	Item *mItemPtr;
 	RECT ClientRect;
 	Monster *mBossPtr;
-	Bullet *A[3];
 	shared_ptr<AudioClip> clip = nullptr;
+	TaskList *PlayerList, *EnemyList, *BulletList, *ItemList, *EBulletList;
+	wstring BGM_Path;
+	int Stage = -1, MobCount = 0;
 };

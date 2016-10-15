@@ -8,6 +8,11 @@ wstring Paths[2] = { L"Resources/Debug/Dopamine.wav", L"Resources/Debug/tjfsus.w
 
 GameManager::GameManager()
 {
+	PlayerList = new TaskList(sizeof(Player), 1);
+	EnemyList = new TaskList(sizeof(Monster), 22);
+	BulletList = new TaskList(sizeof(Bullet), 5000);
+	EBulletList = new TaskList(sizeof(EnemyBullet), 5000);
+	ItemList = new TaskList(sizeof(Item), 1);
 }
 
 GameManager::~GameManager()
@@ -20,12 +25,20 @@ void GameManager::Initialize()
 	mPlayerPtr->Load();
 	mItemPtr = new Item();
 	mItemPtr->Load();
-	mBossPtr = new Monster("Boss", D3DXVECTOR3(WINDOW_WIDTH/2, WINDOW_HEIGHT/2, 0.0f), 0.0f, 22, 1, L"Resources/Debug/player.png", L"Resources/Debug/lachryma.wav");
-	mBossPtr->Load();
-	HRESULT hr;
-	V(ResourceManager::Get().Initialize());
-	clip = ResourceManager::Get().LoadAudioClip(Paths[rand()%2]);
-	clip->Play(true);
+	//mBossPtr = new Monster(
+	//	"Boss", 
+	//	D3DXVECTOR3(WINDOW_WIDTH/2, 0, 0.0f), 
+	//	1.f, 
+	//	222, 
+	//	1, 
+	//	L"Resources/Debug/boss.png", 
+	//	L"Resources/Debug/lachryma.wav");
+	//mBossPtr->Load();
+	//mBossPtr->GetInfo()->ShootInterval = 12;
+	//mBossPtr->ShootCoolDown = 64;
+	//mBossPtr->scale = 0.25f;
+	//mBossPtr->Pattern = BulletPattern::Straight;
+	mBossPtr = new Monster(D3DXVECTOR3(0, 0, 0), new CharacterInfo{ "temp", 0.f, 1, 1, 0, 0 }, L"Resources/Debug/enemy.png");
 
 #if DEBUG
 	AllocConsole();
@@ -51,87 +64,46 @@ void GameManager::Update()
 {
 	ClientRect = DXUTGetWindowClientRect();
 
-	mPlayerPtr->Update();
-	mItemPtr->Update();
-	mBossPtr->Update();
-	for (char i = 0; i < 3; i++)
-	{
-		if (A[i] != nullptr)
-		{
-			A[i]->Update();
-		}
-	}
+	TaskUpdate(PlayerList);
+	TaskUpdate(ItemList);
+	TaskUpdate(EnemyList);
+	TaskUpdate(BulletList);
+	TaskUpdate(EBulletList);
 
-	if (IsTriggerOn(mPlayerPtr->GetRect(), mItemPtr->GetRect()))
+	if (mPlayerPtr->IsHit(mItemPtr))
 	{
 		print("플레이어와 아이템 충돌함\n");
 		mItemPtr->Respawn();
-		mPlayerPtr->info->Speed+=0.22f;
+		mPlayerPtr->info->Speed += 0.22f;
 		mPlayerPtr->info->DMG++;
+		mPlayerPtr->info->NowHP = mPlayerPtr->info->MaxHP;
 		mPlayerPtr->GotItem++;
-		mBossPtr->GetInfo()->Speed *= 1.5;
-		mBossPtr->GetInfo()->DMG += 1;
 		print("현재 속도 : %.2f\n", mPlayerPtr->info->Speed);
 		clip = ResourceManager::Get().LoadAudioClip(L"Resources/Debug/SE.wav");
 		clip->Play(false);
-		if (mPlayerPtr->info->Speed > 22)
-		{
-			GameOver();
-		}
 	}
-	if (IsTriggerOn(mBossPtr->GetRect(), mPlayerPtr->GetRect()))
+	if (mBossPtr != nullptr)
 	{
-		print("보스와 플레이어 충돌함\n");
-		mPlayerPtr->info->NowHP -= mBossPtr->GetInfo()->DMG;
-		print("현재 체력 : %d\n", mPlayerPtr->info->NowHP);
-		mPlayerPtr->Respawn();
-		if (mPlayerPtr->info->NowHP <= 0)
+		if (mPlayerPtr->IsHit(mBossPtr))
 		{
-			GameOver();
-		}
-	}
-	
-	for (char i = 0; i < 3; i++)
-	{
-		if (A[i] != nullptr)
-		{
-			if (IsTriggerOn(mBossPtr->GetRect(), A[i]->GetRect()))
+			print("보스와 플레이어 충돌함\n");
+			mPlayerPtr->info->NowHP -= mBossPtr->GetInfo()->DMG;
+			print("현재 체력 : %d\n", mPlayerPtr->info->NowHP);
+			mPlayerPtr->Respawn();
+			if (mPlayerPtr->info->NowHP <= 0)
 			{
-				print("보스와 탄환 충돌함\n");
-				mBossPtr->GetInfo()->NowHP -= mPlayerPtr->info->DMG;
-				print("보스 체력 : %d\n", mBossPtr->GetInfo()->NowHP);
-				if (mBossPtr->GetInfo()->NowHP <= 0)
-				{
-					clip->Stop();
-					mBossPtr->~Monster();
-					GameOver();
-				}
-				else if (mBossPtr->GetInfo()->NowHP - mPlayerPtr->info->DMG <= mBossPtr->GetInfo()->MaxHP / 10)
-				{
-					clip->Stop();
-					clip = ResourceManager::Get().LoadAudioClip(mBossPtr->MusicName);
-					clip->Play(true);
-				}
-				A[i]->~Bullet();
-				A[i] = NULL;
+				GameOver();
 			}
 		}
 	}
+
+	CheckStage();
 }
 
 void GameManager::GameOver()
 {
-	mPlayerPtr->~Player();
-	mItemPtr->~Item();
-	mBossPtr->~Monster();
-	
-	for (char i = 0; i < 3; i++)
-	{
-		if (A[i] != nullptr)
-		{
-			A[i]->~Bullet();
-		}
-	}
+	HRESULT hr;
+	V(ResourceManager::Get().Initialize());
 	print("Game Over\n");
 	while (true)
 	{
@@ -143,18 +115,106 @@ void GameManager::GameOver()
 	}
 }
 
-void GameManager::Render()
+void GameManager::TaskUpdate(TaskList * list)
 {
-	mPlayerPtr->Render();
-	mItemPtr->Render();
-	mBossPtr->Render();
-	for (char i = 0; i < 3; i++)
+	for (TaskIter i(list); i.HasNext(); )
 	{
-		if (A[i] != nullptr)
+		Object* obj = static_cast<Object*>(i.Next());
+		obj->Update();
+	}
+}
+
+void GameManager::TaskRender(TaskList * list)
+{
+	for (TaskIter i(list); i.HasNext(); )
+	{
+		Object* obj = static_cast<Object*>(i.Next());
+		obj->Render();
+	}
+}
+
+void GameManager::TaskDelete(TaskList * list)
+{
+	for (TaskIter i(list); i.HasNext(); i.Next(), i.Remove());
+}
+
+void GameManager::CheckStage()
+{
+	if (MobCount == 0)
+	{
+		HRESULT hr;
+		V(ResourceManager::Get().Initialize());
+		BGM_Path = Paths[rand() % 2];
+		clip = ResourceManager::Get().LoadAudioClip(BGM_Path);
+		clip->Play(true);
+		Stage++;
+		switch (Stage)
 		{
-			A[i]->Render();
+		case 0:
+			mBossPtr = new Monster(
+				D3DXVECTOR3(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2, 0.0f),
+				new CharacterInfo{"Boss", 0.f, 22, 22, 1, 12},
+				L"Resources/Debug/boss.png",
+				BulletPattern::Straight,
+				0.25f,
+				L"Resources/Debug/lachryma.wav");
+			mBossPtr->ShootCoolDown = 64;
+			new Monster(D3DXVECTOR3(100, 0, 0.0f), new CharacterInfo{"잡몹", 1.f, 2, 2, 1, 24}, L"Resources/Debug/enemy.png", BulletPattern::Straight);
+			break;
+		case 1:
+			mBossPtr = new Monster(
+				D3DXVECTOR3(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2, 0.0f),
+				new CharacterInfo{ "Boss", 0.f, 22, 22, 1, 6 },
+				L"Resources/Debug/boss.png",
+				BulletPattern::FourWay,
+				0.25f,
+				L"Resources/Debug/lachryma.wav");
+			mBossPtr->ShootCoolDown = 64;
+			new Monster(D3DXVECTOR3(100, 0, 0.0f), new CharacterInfo{ "잡몹", 1.f, 2, 2, 1, 24 }, L"Resources/Debug/enemy.png", BulletPattern::Straight);
+			new Monster(D3DXVECTOR3(WINDOW_WIDTH - 100, 0, 0.0f), new CharacterInfo{ "잡몹", 1.f, 2, 2, 1, 24 }, L"Resources/Debug/enemy.png", BulletPattern::Straight);
+			break;
+		case 2:
+			mBossPtr = new Monster(
+				D3DXVECTOR3(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2, 0.0f),
+				new CharacterInfo{ "Boss", 0.f, 222, 222, 1, 6 },
+				L"Resources/Debug/boss.png",
+				BulletPattern::Xross,
+				0.25f,
+				L"Resources/Debug/lachryma.wav");
+			mBossPtr->ShootCoolDown = 64;
+			new Monster(D3DXVECTOR3(100, 0, 0.0f), new CharacterInfo{ "잡몹", 1.f, 4, 4, 1, 12 }, L"Resources/Debug/enemy.png", BulletPattern::Straight);
+			new Monster(D3DXVECTOR3(WINDOW_WIDTH - 100, 0, 0.0f), new CharacterInfo{ "잡몹", 1.f, 4, 4, 1, 12 }, L"Resources/Debug/enemy.png", BulletPattern::Straight);
+			new Monster(D3DXVECTOR3(150, 0, 0.0f), new CharacterInfo{ "잡몹", 1.f, 4, 4, 1, 12 }, L"Resources/Debug/enemy.png", BulletPattern::Straight);
+			new Monster(D3DXVECTOR3(WINDOW_WIDTH - 150, 0, 0.0f), new CharacterInfo{ "잡몹", 1.f, 4, 4, 1, 12 }, L"Resources/Debug/enemy.png", BulletPattern::Straight);
+			break;
+		case 3:
+			mBossPtr = new Monster(
+				D3DXVECTOR3(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2, 0.0f),
+				new CharacterInfo{ "Boss", 0.f, 222, 222, 1, 3 },
+				L"Resources/Debug/boss.png",
+				BulletPattern::FourWayToXross,
+				0.25f,
+				L"Resources/Debug/lachryma.wav");
+			mBossPtr->ShootCoolDown = 64;
+			new Monster(D3DXVECTOR3(100, 0, 0.0f), new CharacterInfo{ "잡몹", 1.f, 4, 4, 1, 12 }, L"Resources/Debug/enemy.png", BulletPattern::FourWay);
+			new Monster(D3DXVECTOR3(WINDOW_WIDTH - 100, 0, 0.0f), new CharacterInfo{ "잡몹", 1.f, 4, 4, 1, 12 }, L"Resources/Debug/enemy.png", BulletPattern::FourWay);
+			new Monster(D3DXVECTOR3(150, 50, 0.0f), new CharacterInfo{ "잡몹", 1.f, 4, 4, 1, 12 }, L"Resources/Debug/enemy.png", BulletPattern::FourWay);
+			new Monster(D3DXVECTOR3(WINDOW_WIDTH - 150, 50, 0.0f), new CharacterInfo{ "잡몹", 1.f, 4, 4, 1, 12 }, L"Resources/Debug/enemy.png", BulletPattern::FourWay);
+			break;
+		default:
+			//GameOver();
+			break;
 		}
 	}
+}
+
+void GameManager::Render()
+{
+	TaskRender(PlayerList);
+	TaskRender(ItemList);
+	TaskRender(EnemyList);
+	TaskRender(BulletList);
+	TaskRender(EBulletList);
 }
 
 void GameManager::Destroy()
@@ -162,24 +222,14 @@ void GameManager::Destroy()
 	SAFE_DELETE(mPlayerPtr);
 	SAFE_DELETE(mItemPtr);
 	SAFE_DELETE(mBossPtr);
-	for (char i = 0; i < 3; i++)
-	{
-		if (A[i] != nullptr)
-		{
-			A[i]->~Bullet();
-		}
-	}
-	SAFE_DELETE(A[0]);
-	SAFE_DELETE(A[1]);
-	SAFE_DELETE(A[2]);
+	TaskDelete(PlayerList);
+	TaskDelete(ItemList);
+	TaskDelete(EnemyList);
+	TaskDelete(BulletList);
+	TaskDelete(EBulletList);
+	
 #if DEBUG
 	FreeConsole();
 #endif
 	Renderer::Release();
-}
-
-//렉트 두 개를 인자로 받아 충돌체크를 한다
-bool GameManager::IsTriggerOn(const RECT& a, const RECT& b)
-{
-	return (a.left <= b.right && a.right >= b.left && a.top <= b.bottom && a.bottom >= b.top);
 }

@@ -1,1 +1,5 @@
-﻿  Game_2010.vcxproj -> D:\GitHub\SkillClassDXgame\Debug\Game.exe
+﻿  Monster.cpp
+d:\github\skillclassdxgame\monster.cpp(52): warning C4238: 비표준 확장이 사용됨: 클래스 rvalue를 lvalue로 사용했습니다.
+d:\github\skillclassdxgame\monster.cpp(115): warning C4244: '=': 'int'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+  Game_2010.vcxproj -> D:\GitHub\SkillClassDXgame\Debug\Game.exe
+  Game_2010.vcxproj -> D:\GitHub\SkillClassDXgame\Debug\Game.pdb (Full PDB)
