@@ -388,6 +388,7 @@
     <ClCompile Include="Bullet.cpp" />
     <ClCompile Include="DXUT\Optional\SDKsound.cpp" />
     <ClCompile Include="DXUT\Optional\SDKwavefile.cpp" />
+    <ClCompile Include="EnemyBullet.cpp" />
     <ClCompile Include="GameManager.cpp" />
     <ClCompile Include="Item.cpp" />
     <ClCompile Include="Monster.cpp" />
@@ -397,11 +398,15 @@
     <ClCompile Include="ResourceManager.cpp" />
     <ClCompile Include="AudioClip.cpp" />
     <ClCompile Include="SpriteRenderer.cpp" />
+    <ClCompile Include="Task.cpp" />
+    <ClCompile Include="TaskIter.cpp" />
+    <ClCompile Include="TaskList.cpp" />
     <ClCompile Include="Texture.cpp" />
     <ClInclude Include="Asset.h" />
     <ClInclude Include="Bullet.h" />
     <ClInclude Include="DXUT\Optional\SDKsound.h" />
     <ClInclude Include="DXUT\Optional\SDKwavefile.h" />
+    <ClInclude Include="EnemyBullet.h" />
     <ClInclude Include="GameError.h" />
     <ClInclude Include="Item.h" />
     <ClInclude Include="Monster.h" />
@@ -412,6 +417,9 @@
     <ClInclude Include="Singleton.h" />
     <ClInclude Include="AudioClip.h" />
     <ClInclude Include="SpriteRenderer.h" />
+    <ClInclude Include="Task.h" />
+    <ClInclude Include="TaskIter.h" />
+    <ClInclude Include="TaskList.h" />
     <ClInclude Include="Texture.h" />
     <None Include="ClassDiagram.cd" />
     <None Include="DXUT\Optional\directx.ico" />

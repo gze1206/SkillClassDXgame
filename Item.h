@@ -17,6 +17,9 @@ public:
 	virtual HRESULT Load() override;
 	virtual void Update() override;
 
+	void * operator new(size_t n);
+	void operator delete(void* p);
+
 	SpriteRenderer *renderer;
 	RECT rc;
 };

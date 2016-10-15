@@ -3,7 +3,7 @@
 #include "SpriteRenderer.h"
 #include <time.h>
 
-Item::Item() : renderer(new SpriteRenderer())
+Item::Item() : renderer(new SpriteRenderer()), Object(GameManager::Get().ItemList)
 {
 	mPosition = D3DXVECTOR3(100, 100, 0);
 	srand(time(NULL));
@@ -47,4 +47,14 @@ HRESULT Item::Load()
 void Item::Update()
 {
 
+}
+
+void * Item::operator new(size_t n)
+{
+	return GameManager::Get().ItemList->New(n);
+}
+
+void Item::operator delete(void * p)
+{
+	return GameManager::Get().ItemList->Delete(p);
 }

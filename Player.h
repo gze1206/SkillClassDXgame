@@ -34,13 +34,19 @@ public:
 
 	void Respawn();
 
+	void * operator new(size_t n);
+	void operator delete(void* p);
+
 public:
 	CharacterInfo *info;
 	D3DXVECTOR3 direction;
 	int GotItem = 0;
 	Rotate rot;
+	float ShootCoolDown = 0.f;
 
 protected:
 	SpriteRenderer *renderer;
+	SpriteRenderer *HPrenderer;
+	shared_ptr<Texture> HpTexture;
 };
 

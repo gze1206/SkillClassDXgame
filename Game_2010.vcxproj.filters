@@ -24,6 +24,9 @@
     <Filter Include="Core\ResourceManager">
       <UniqueIdentifier>{5e653edd-5bd3-4411-8010-106b04f659e5}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Core\Task">
+      <UniqueIdentifier>{ebbad208-6189-4327-ba36-0091812cbcbb}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="DXUT\Optional\directx.ico">
@@ -123,6 +126,16 @@
     <ClCompile Include="Asset.cpp">
       <Filter>Core\ResourceManager</Filter>
     </ClCompile>
+    <ClCompile Include="Task.cpp">
+      <Filter>Core\Task</Filter>
+    </ClCompile>
+    <ClCompile Include="TaskIter.cpp">
+      <Filter>Core\Task</Filter>
+    </ClCompile>
+    <ClCompile Include="TaskList.cpp">
+      <Filter>Core\Task</Filter>
+    </ClCompile>
+    <ClCompile Include="EnemyBullet.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Define.h">
@@ -168,6 +181,16 @@
     <ClInclude Include="Asset.h">
       <Filter>Core\ResourceManager</Filter>
     </ClInclude>
+    <ClInclude Include="Task.h">
+      <Filter>Core\Task</Filter>
+    </ClInclude>
+    <ClInclude Include="TaskIter.h">
+      <Filter>Core\Task</Filter>
+    </ClInclude>
+    <ClInclude Include="TaskList.h">
+      <Filter>Core\Task</Filter>
+    </ClInclude>
+    <ClInclude Include="EnemyBullet.h" />
   </ItemGroup>
   <ItemGroup>
     <CLInclude Include="resource.h">
