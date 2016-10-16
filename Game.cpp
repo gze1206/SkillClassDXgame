@@ -145,11 +145,19 @@ INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
 	DXUTCreateDeviceFromSettings(&setting);								//이걸로 변경
 	*/
     // Initialize DXUT and create the desired Win32 window and Direct3D device for the application
+
+	auto setting = DXUTGetDeviceSettings();
+	setting.d3d9.pp.PresentationInterval = D3DPRESENT_INTERVAL_IMMEDIATE;
+	setting.d3d9.pp.BackBufferHeight = WINDOW_HEIGHT;
+	setting.d3d9.pp.BackBufferWidth = WINDOW_WIDTH;
+	setting.d3d9.pp.Windowed = true;
+
     DXUTInit( true, true ); // Parse the command line and show msgboxes
     DXUTSetHotkeyHandling( true, true, true );  // handle the default hotkeys
     DXUTSetCursorSettings( true, true ); // Show the cursor and clip it when in full screen
     DXUTCreateWindow( L"Game" );
-    DXUTCreateDevice( STATE_IS_WINDOW, WINDOW_WIDTH, WINDOW_HEIGHT );
+	//DXUTCreateDevice(STATE_IS_WINDOW, WINDOW_WIDTH, WINDOW_HEIGHT);
+	DXUTCreateDeviceFromSettings(&setting);
 
     // Start the render loop
     DXUTMainLoop();
