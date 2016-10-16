@@ -6,7 +6,7 @@
 #include <CRTDBG.H>
 #include <atlconv.h>
 
-Player::Player() : Object(GameManager::Get().PlayerList), renderer(new SpriteRenderer()),HPrenderer(new SpriteRenderer), info(new CharacterInfo{ "PLAYER", 3.0f, 10, 10, 1, 6 })
+Player::Player() : Object(GameManager::Get().PlayerList), renderer(new SpriteRenderer()),HPrenderer(new SpriteRenderer), info(new CharacterInfo{ "PLAYER", 1.5f, 10, 10, 1, 6 })
 {
 	mPosition = D3DXVECTOR3(WINDOW_WIDTH / 2, WINDOW_HEIGHT - 100, 0);
 	GameManager::print("플레이어 : %s 생성됨\n", info->Name.c_str());
@@ -28,6 +28,7 @@ Player::~Player()
 	GameManager::print("플레이어 : %s 제거됨\n", info->Name.c_str());
 	SAFE_DELETE(info);
 	SAFE_DELETE(renderer);
+	SAFE_DELETE(HPrenderer);
 }
 
 HRESULT Player::Load()
